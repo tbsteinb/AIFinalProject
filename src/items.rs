@@ -36,6 +36,13 @@ impl Items {
     }
 }
 
+fn get_all_items() -> Vec<Items> {
+    vec![
+        Illum, Res, Bshields, Haven, Nimble, Mriding, Mboost, Chronos, Rejuv, Veteran, Ktoheal,
+        Lrip, Bulldozer, Caut, Dhands, Wrecker,
+    ]
+}
+
 fn add_item(new_item: &Items, items: &HashSet<(Items, usize)>) -> Option<HashSet<(Items, usize)>> {
     let possible_item_tuple = vec![(new_item.clone(), 1), (new_item.clone(), 2)];
     if items.contains(&(new_item.clone(), 3)) {
@@ -57,13 +64,19 @@ fn add_item(new_item: &Items, items: &HashSet<(Items, usize)>) -> Option<HashSet
     Some(result)
 }
 
-fn successor(items: &HashSet<(Items, usize)>) -> Vector<HashSet<(Items, usize)>> {
-    unimplemented!()
+fn successor(items: &HashSet<(Items, usize)>) -> Vec<HashSet<(Items, usize)>> {
+    let mut result = vec![];
+    let all_items = get_all_items();
+    for item in all_items {
+        if let Some(s) = add_item(&item, items) {
+            result.push(s);
+        }
+    }
+    result
 }
 
 #[cfg(test)]
 mod test {
-    use super::Items::*;
     use super::*;
 
     #[test]
@@ -89,5 +102,33 @@ mod test {
         let set2 = HashSet::new();
         let res3 = Some(vec![(Nimble, 1)].into_iter().collect());
         assert_eq!(res3, add_item(&Nimble, &set2));
+    }
+
+    #[test]
+    fn test_successor() {
+        let all_items = get_all_items();
+        let set1: HashSet<(Items, usize)> = vec![(Illum, 1)].into_iter().collect();
+        let mut res1 = vec![];
+        for item in &all_items {
+            if *item == Illum {
+                res1.push(vec![(Illum, 2)].into_iter().collect());
+            } else {
+                let mut tmp: HashSet<(Items, usize)> = set1.clone();
+                tmp.insert((item.clone(), 1));
+                res1.push(tmp);
+            }
+        }
+        assert_eq!(res1, successor(&set1));
+
+        let set2: HashSet<(Items, usize)> = vec![(Illum, 3)].into_iter().collect();
+        let mut res2 = vec![];
+        for item in &all_items {
+            if *item != Illum {
+                let mut tmp: HashSet<(Items, usize)> = set2.clone();
+                tmp.insert((item.clone(), 1));
+                res2.push(tmp);
+            }
+        }
+        assert_eq!(res2, successor(&set2));
     }
 }
