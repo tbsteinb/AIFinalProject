@@ -3,7 +3,7 @@
 
 use std::collections::HashSet;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 enum Items {
     Illum,
     Res,
@@ -43,28 +43,23 @@ fn get_all_items() -> Vec<Items> {
     ]
 }
 
-fn add_item(new_item: &Items, items: &HashSet<(Items, usize)>) -> Option<HashSet<(Items, usize)>> {
-    let possible_item_tuple = vec![(new_item.clone(), 1), (new_item.clone(), 2)];
-    if items.contains(&(new_item.clone(), 3)) {
+fn add_item(new_item: &Items, items: &Vec<Items>) -> Option<Vec<Items>> {
+    let count = items.iter().filter(|&i| i == new_item).count();
+    if count >= 3 {
         return None;
     }
-    for item_tuple in &possible_item_tuple {
-        if items.contains(&item_tuple) {
-            let mut result = items.clone();
-            result.remove(&item_tuple);
-            result.insert((new_item.clone(), item_tuple.1 + 1));
-            return Some(result);
-        }
+    let mut copy = items.clone();
+    copy.sort();
+    copy.dedup();
+    if count >= 1 || copy.len() < 4 {
+        let mut result = items.clone();
+        result.push(new_item.clone());
+        return Some(result);
     }
-    if items.len() > 3 {
-        return None;
-    }
-    let mut result = items.clone();
-    result.insert((new_item.clone(), 1));
-    Some(result)
+    None
 }
 
-fn successor(items: &HashSet<(Items, usize)>) -> Vec<HashSet<(Items, usize)>> {
+fn successor(items: &Vec<Items>) -> Vec<Vec<Items>> {
     let mut result = vec![];
     let all_items = get_all_items();
     for item in all_items {
@@ -81,54 +76,63 @@ mod test {
 
     #[test]
     fn test_add_item_fail() {
-        let set1 = vec![(Illum, 3)].into_iter().collect();
+        let set1 = vec![Illum, Illum, Illum];
         assert_eq!(None, add_item(&Illum, &set1));
 
-        let set2 = vec![(Illum, 1), (Nimble, 1), (Chronos, 1), (Caut, 1)]
-            .into_iter()
-            .collect();
+        let set2 = vec![Illum, Nimble, Chronos, Caut];
         assert_eq!(None, add_item(&Wrecker, &set2));
     }
 
     #[test]
     fn test_add_item_pass() {
-        let set1 = vec![(Illum, 1)].into_iter().collect();
-        let res1 = Some(vec![(Illum, 2)].into_iter().collect());
+        let set1 = vec![Illum];
+        let res1 = Some(vec![Illum, Illum]);
         assert_eq!(res1, add_item(&Illum, &set1));
 
-        let res2 = Some(vec![(Illum, 1), (Mboost, 1)].into_iter().collect());
+        let res2 = Some(vec![Illum, Mboost]);
         assert_eq!(res2, add_item(&Mboost, &set1));
 
-        let set2 = HashSet::new();
-        let res3 = Some(vec![(Nimble, 1)].into_iter().collect());
+        let set2 = vec![];
+        let res3 = Some(vec![Nimble]);
         assert_eq!(res3, add_item(&Nimble, &set2));
+
+        let set3 = vec![Caut, Chronos, Caut, Nimble];
+        let res4 = Some(vec![Caut, Chronos, Caut, Nimble, Illum]);
+        assert_eq!(res4, add_item(&Illum, &set3));
     }
 
     #[test]
     fn test_successor() {
         let all_items = get_all_items();
-        let set1: HashSet<(Items, usize)> = vec![(Illum, 1)].into_iter().collect();
+        let set1 = vec![Illum];
         let mut res1 = vec![];
         for item in &all_items {
-            if *item == Illum {
-                res1.push(vec![(Illum, 2)].into_iter().collect());
-            } else {
-                let mut tmp: HashSet<(Items, usize)> = set1.clone();
-                tmp.insert((item.clone(), 1));
-                res1.push(tmp);
-            }
+            let mut tmp = set1.clone();
+            tmp.push(item.clone());
+            res1.push(tmp);
         }
         assert_eq!(res1, successor(&set1));
 
-        let set2: HashSet<(Items, usize)> = vec![(Illum, 3)].into_iter().collect();
+        let set2 = vec![Illum, Illum, Illum];
         let mut res2 = vec![];
         for item in &all_items {
             if *item != Illum {
-                let mut tmp: HashSet<(Items, usize)> = set2.clone();
-                tmp.insert((item.clone(), 1));
+                let mut tmp = set2.clone();
+                tmp.push(item.clone());
                 res2.push(tmp);
             }
         }
         assert_eq!(res2, successor(&set2));
+
+        let set3 = vec![Caut, Caut, Chronos, Caut];
+        let mut res3 = vec![];
+        for item in &all_items {
+            if *item != Caut {
+                let mut tmp = set3.clone();
+                tmp.push(item.clone());
+                res3.push(tmp);
+            }
+        }
+        assert_eq!(res3, successor(&set3));
     }
 }
