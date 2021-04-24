@@ -16,6 +16,9 @@ in C or C++.
 ## Build Steps
 To build this project, just run `cargo build --release`
 
-To run the project, run `cargo run --release`
+To run the project, run `cargo run --release <file>`
+
+Where `<file>` is a json file with the champions in the server (`state.json` is an
+example config file).
 
 To run the test cases, run `cargo test`
