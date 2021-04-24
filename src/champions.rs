@@ -121,7 +121,7 @@ impl Champions {
             true
         } else {
             match self {
-                Ying | Ruckus | Grohk => true,
+                Yagorath | Ying | Ruckus | Grohk => true,
                 _ => false,
             }
         }
