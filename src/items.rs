@@ -2,6 +2,7 @@
 #![allow(clippy::enum_glob_use)]
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+// All the items in the game
 pub enum Items {
     Illum,
     Res,
@@ -24,6 +25,7 @@ pub enum Items {
 use Items::*;
 
 impl Items {
+    // Function to get the cost of the first level of the item
     fn get_base_cost(&self) -> isize {
         match self {
             Illum | Res | Nimble | Rejuv | Veteran | Bulldozer => 150,
@@ -34,6 +36,7 @@ impl Items {
     }
 }
 
+// Helper function that generates a vector containing 1 of each item
 fn get_all_items() -> Vec<Items> {
     vec![
         Illum, Res, Bshields, Haven, Nimble, Mriding, Mboost, Chronos, Rejuv, Veteran, Ktoheal,
@@ -41,6 +44,8 @@ fn get_all_items() -> Vec<Items> {
     ]
 }
 
+// Function which adds an item to a list of items. Up to 4 unique items can be selected, and
+// each item can only go up to level 3
 fn add_item(new_item: &Items, items: &Vec<Items>) -> Option<Vec<Items>> {
     let count = items.iter().filter(|&i| i == new_item).count();
     if count >= 3 {
@@ -57,6 +62,7 @@ fn add_item(new_item: &Items, items: &Vec<Items>) -> Option<Vec<Items>> {
     None
 }
 
+// Generates the next set of item sets by adding 1 of each item to the set
 pub fn successor(items: &Vec<Items>) -> Vec<Vec<Items>> {
     let mut result = vec![];
     let all_items = get_all_items();
@@ -68,6 +74,7 @@ pub fn successor(items: &Vec<Items>) -> Vec<Vec<Items>> {
     result
 }
 
+// Calculates the cost of a set of items
 pub fn item_set_cost(items: &Vec<Items>) -> isize {
     let mut sum = 0isize;
     let mut copy = items.clone();

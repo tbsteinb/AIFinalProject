@@ -2,7 +2,6 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
-// use petgraph::graph::Graph;
 use serde::Deserialize;
 use serde_json::Result;
 use std::env;
@@ -17,12 +16,14 @@ use items::Items::*;
 use items::*;
 
 #[derive(Debug, Deserialize)]
+// Lists the players in the server
 struct GameInfo {
     player: Champions,
     team: Vec<Champions>,
     enemy: Vec<Champions>,
 }
 
+// Reads in game state from json file
 fn get_game_state() -> GameInfo {
     let args: Vec<String> = env::args().collect();
     let file = File::open(args[1].clone()).unwrap();
@@ -30,11 +31,15 @@ fn get_game_state() -> GameInfo {
     serde_json::from_reader(reader).unwrap()
 }
 
+// Adds a multiplier to the value of the item based on it's level
+// Helps counteract the increase in cost per level.
 fn get_item_mul(item: &Items, items: &Vec<Items>) -> isize {
     let count = items.iter().filter(|&j| j == item).count() as isize;
     (0..=count).sum::<isize>()
 }
 
+// Evaluation function. Returns a score for a set of items based
+// on how useful those items are to the player.
 fn eval(player: &Champions, items: &Vec<Items>) -> isize {
     let cost = item_set_cost(items);
     let mut sum = 0;
