@@ -1,7 +1,8 @@
 #![warn(clippy::pedantic)]
+use serde::Deserialize;
 
-#[derive(PartialEq, Eq, Clone)]
-enum Champions {
+#[derive(PartialEq, Eq, Clone, Debug, Deserialize)]
+pub enum Champions {
     Androxus,
     Ash,
     Atlas,
@@ -53,148 +54,144 @@ enum Champions {
 }
 
 #[derive(PartialEq, Eq, Clone)]
-enum Class {
+pub enum Class {
     Damage,
     Flank,
     FrontLine,
     Support,
 }
 
-impl Champions {
-    fn get_class(&self) -> Class {
-        match self {
-            Champions::Ash
-            | Champions::Atlas
-            | Champions::Barik
-            | Champions::Fernando
-            | Champions::Inara
-            | Champions::Khan
-            | Champions::Makoa
-            | Champions::Raum
-            | Champions::Ruckus
-            | Champions::Terminus
-            | Champions::Torvald
-            | Champions::Yagorath => Class::FrontLine,
-            Champions::BKing
-            | Champions::Cassie
-            | Champions::Dredge
-            | Champions::Drogoz
-            | Champions::Imani
-            | Champions::Kinessa
-            | Champions::Lian
-            | Champions::Octavia
-            | Champions::ShaLin
-            | Champions::Strix
-            | Champions::Tiberius
-            | Champions::Tyra
-            | Champions::Viktor
-            | Champions::Vivian
-            | Champions::Willo => Class::Damage,
-            Champions::Corvus
-            | Champions::Furia
-            | Champions::Grohk
-            | Champions::Grover
-            | Champions::Io
-            | Champions::Jenos
-            | Champions::Damba
-            | Champions::Pip
-            | Champions::Seris
-            | Champions::Ying => Class::Support,
-            Champions::Androxus
-            | Champions::Buck
-            | Champions::Evie
-            | Champions::Koga
-            | Champions::Lex
-            | Champions::Maeve
-            | Champions::Moji
-            | Champions::Skye
-            | Champions::Talus
-            | Champions::Vora
-            | Champions::Zhin => Class::Flank,
-        }
-    }
-}
+use Champions::*;
+use Class::*;
 
 impl Champions {
-    fn uses_abilities_frequently(&self) -> bool {
+    pub fn get_class(&self) -> Class {
         match self {
-            Champions::Viktor | Champions::Yagorath | Champions::Io | Champions::Strix => false,
+            Ash | Atlas | Barik | Fernando | Inara | Khan | Makoa | Raum | Ruckus | Terminus
+            | Torvald | Yagorath => FrontLine,
+            BKing | Cassie | Dredge | Drogoz | Imani | Kinessa | Lian | Octavia | ShaLin
+            | Strix | Tiberius | Tyra | Viktor | Vivian | Willo => Damage,
+            Corvus | Furia | Grohk | Grover | Io | Jenos | Damba | Pip | Seris | Ying => Support,
+            Androxus | Buck | Evie | Koga | Lex | Maeve | Moji | Skye | Talus | Vora | Zhin => {
+                Flank
+            }
+        }
+    }
+
+    pub fn uses_abilities_frequently(&self) -> bool {
+        match self {
+            Viktor | Yagorath | Io | Strix => false,
             _ => true,
         }
     }
 
-    fn has_major_ult(&self) -> bool {
+    pub fn has_major_ult(&self) -> bool {
         match self {
-            Champions::Viktor
-            | Champions::Ying
-            | Champions::Grohk
-            | Champions::Corvus
-            | Champions::Pip
-            | Champions::Imani => true,
+            Viktor | Ying | Grohk | Corvus | Pip | Imani => true,
             _ => false,
         }
     }
 
-    fn needs_healer(&self) -> bool {
-        if self.get_class() == Class::FrontLine {
+    pub fn needs_healer(&self) -> bool {
+        if self.get_class() == FrontLine {
             true
         } else {
             false
         }
     }
 
-    fn has_sustained_fire(&self) -> bool {
-        unimplemented!()
+    pub fn has_sustained_fire(&self) -> bool {
+        match self {
+            Octavia | Tyra | Viktor | Vivian | Atlas | Barik | Fernando | Inara | Khan | Raum
+            | Ruckus | Yagorath | Androxus | Buck | Koga | Lex | Moji | Skye | Talus | Vora
+            | Corvus | Furia | Grohk | Jenos | Ying => true,
+            _ => false,
+        }
     }
 
-    fn is_blaster(&self) -> bool {
-        unimplemented!()
+    pub fn is_blaster(&self) -> bool {
+        match self {
+            BKing | Dredge | Drogoz | Willo | Ash | Evie | Pip => true,
+            _ => false,
+        }
     }
 
-    fn high_dps(&self) -> bool {
-        if self.get_class() == Class::Damage || self.get_class() == Class::Flank {
+    pub fn high_dps(&self) -> bool {
+        if self.get_class() == Damage || self.get_class() == Flank {
             true
         } else {
-            false
+            match self {
+                Ying | Ruckus | Grohk => true,
+                _ => false,
+            }
         }
     }
 
-    fn has_normal_shield(&self) -> bool {
-        unimplemented!()
-    }
-
-    fn lacks_mobility(&self) -> bool {
+    pub fn has_normal_shield(&self) -> bool {
         match self {
-            Champions::Tyra | Champions::Terminus => true,
+            Vivian | Ash | Barik | Fernando | Khan | Makoa | Ruckus | Torvald => true,
             _ => false,
         }
     }
 
-    fn has_aoe(&self) -> bool {
-        unimplemented!()
-    }
-
-    fn has_deployable(&self) -> bool {
-        unimplemented!()
-    }
-
-    fn has_special_or_slow_reload(&self) -> bool {
+    pub fn lacks_mobility(&self) -> bool {
         match self {
-            Champions::Damba | Champions::Dredge | Champions::Pip => true,
+            Tyra | Terminus => true,
             _ => false,
         }
     }
 
-    fn is_squishy(&self) -> bool {
+    pub fn has_aoe(&self) -> bool {
+        if self.is_blaster() {
+            true
+        } else {
+            match self {
+                Imani | Lian | Tiberius | Tyra | Viktor | Fernando | Inara | Terminus
+                | Yagorath | Koga | Moji | Grohk | Seris => true,
+                _ => false,
+            }
+        }
+    }
+
+    pub fn has_deployable(&self) -> bool {
         match self {
-            Champions::Evie | Champions::Maeve => true,
+            Imani | Vivian | Barik | Inara | Grohk | Io | Ying => true,
             _ => false,
         }
     }
 
-    fn is_fast(&self) -> bool {
+    pub fn has_special_or_slow_reload(&self) -> bool {
         match self {
-            Champions::Io | Champions::Talus => true,
+            Damba | Dredge | Pip => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_squishy(&self) -> bool {
+        match self {
+            Evie | Maeve => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_fast(&self) -> bool {
+        match self {
+            Io | Talus => true,
+            _ => false,
+        }
+    }
+
+    pub fn has_cc(&self) -> bool {
+        match self {
+            Strix | Willo | Ash | Atlas | Inara | Khan | Terminus | Buck | Evie | Maeve | Vora
+            | Furia | Grohk | Grover | Io | Jenos | Damba | Pip => true,
+            _ => false,
+        }
+    }
+
+    pub fn has_cloak(&self) -> bool {
+        match self {
+            ShaLin | Strix | Skye | Seris => true,
             _ => false,
         }
     }

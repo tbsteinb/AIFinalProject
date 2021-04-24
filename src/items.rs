@@ -1,10 +1,8 @@
 #![warn(clippy::pedantic)]
 #![allow(clippy::enum_glob_use)]
 
-use std::collections::HashSet;
-
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-enum Items {
+pub enum Items {
     Illum,
     Res,
     Bshields,
@@ -26,7 +24,7 @@ enum Items {
 use Items::*;
 
 impl Items {
-    fn get_base_cost(&self) -> usize {
+    fn get_base_cost(&self) -> isize {
         match self {
             Illum | Res | Nimble | Rejuv | Veteran | Bulldozer => 150,
             Bshields | Haven | Chronos => 300,
@@ -59,7 +57,7 @@ fn add_item(new_item: &Items, items: &Vec<Items>) -> Option<Vec<Items>> {
     None
 }
 
-fn successor(items: &Vec<Items>) -> Vec<Vec<Items>> {
+pub fn successor(items: &Vec<Items>) -> Vec<Vec<Items>> {
     let mut result = vec![];
     let all_items = get_all_items();
     for item in all_items {
@@ -68,6 +66,22 @@ fn successor(items: &Vec<Items>) -> Vec<Vec<Items>> {
         }
     }
     result
+}
+
+pub fn item_set_cost(items: &Vec<Items>) -> isize {
+    let mut sum = 0isize;
+    let mut copy = items.clone();
+    copy.sort();
+    copy.dedup();
+    for i in copy {
+        let count = items.iter().filter(|&j| *j == i).count() as isize;
+        let mut mul = 0isize;
+        for j in 1..=count {
+            mul += j;
+        }
+        sum += i.get_base_cost() * mul;
+    }
+    sum
 }
 
 #[cfg(test)]
@@ -134,5 +148,21 @@ mod test {
             }
         }
         assert_eq!(res3, successor(&set3));
+    }
+
+    #[test]
+    fn test_item_set_cost() {
+        let set1 = vec![];
+        assert_eq!(0, item_set_cost(&set1));
+
+        let set2 = vec![Illum];
+        assert_eq!(Illum.get_base_cost(), item_set_cost(&set2));
+
+        let set3 = vec![Caut, Chronos, Caut, Illum];
+        let caut_cost = 3 * Caut.get_base_cost();
+        assert_eq!(
+            caut_cost + Chronos.get_base_cost() + Illum.get_base_cost(),
+            item_set_cost(&set3)
+        );
     }
 }
