@@ -87,7 +87,7 @@ impl Champions {
 
     pub fn has_major_ult(&self) -> bool {
         match self {
-            Viktor | Ying | Grohk | Corvus | Pip | Imani => true,
+            Viktor | Ying | Grohk | Pip | Imani => true,
             _ => false,
         }
     }

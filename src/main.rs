@@ -30,84 +30,85 @@ fn get_game_state() -> GameInfo {
     serde_json::from_reader(reader).unwrap()
 }
 
+fn get_item_mul(item: &Items, items: &Vec<Items>) -> isize {
+    let count = items.iter().filter(|&j| j == item).count() as isize;
+    (0..=count).sum::<isize>()
+}
+
 fn eval(player: &Champions, items: &Vec<Items>) -> isize {
-    let chronos_mul = items.iter().filter(|&j| *j == Chronos).count() as isize;
-    let mboost_mul = items.iter().filter(|&j| *j == Mboost).count() as isize;
-    let rejuv_mul = items.iter().filter(|&j| *j == Rejuv).count() as isize;
-    let lrip_mul = items.iter().filter(|&j| *j == Lrip).count() as isize;
-    let ktoheal_mul = items.iter().filter(|&j| *j == Ktoheal).count() as isize;
-    let nimble_mul = items.iter().filter(|&j| *j == Nimble).count() as isize;
-    let dhands_mul = items.iter().filter(|&j| *j == Dhands).count() as isize;
-    let haven_mul = items.iter().filter(|&j| *j == Haven).count() as isize;
-    let caut_mul = items.iter().filter(|&j| *j == Caut).count() as isize;
     let cost = item_set_cost(items);
     let mut sum = 0;
     for i in items {
         if player.uses_abilities_frequently() {
             if *i == Chronos {
-                sum += 700 * chronos_mul;
+                sum += 300 * get_item_mul(i, items)
             }
         }
         if player.has_major_ult() {
             if *i == Mboost {
-                sum += 700 * mboost_mul
+                sum += 400 * get_item_mul(i, items)
             }
         }
         if player.needs_healer() {
             if *i == Rejuv {
-                sum += 800 * rejuv_mul
+                sum += 200 * get_item_mul(i, items)
             }
         }
-        if player.has_sustained_fire() {
+        if player.has_sustained_fire() || player.high_dps() {
             if *i == Lrip {
-                sum += 600 * lrip_mul
+                sum += 200 * get_item_mul(i, items)
             }
         }
         if player.high_dps() {
-            if *i == Lrip {
-                sum += 200 * lrip_mul
-            } else if *i == Caut {
-                sum += 700 * caut_mul
+            if *i == Caut {
+                sum += 400 * get_item_mul(i, items)
             }
         }
         if player.is_blaster() {
             if *i == Ktoheal {
-                sum += 500 * ktoheal_mul
+                sum += 150 * get_item_mul(i, items)
             }
         }
         if player.lacks_mobility() {
             if *i == Nimble {
-                sum += 500 * nimble_mul
+                sum += 200 * get_item_mul(i, items)
             }
         }
         if player.has_aoe() {
             if *i == Ktoheal {
-                sum += 600 * ktoheal_mul
+                sum += 150 * get_item_mul(i, items)
             }
         }
         if player.has_special_or_slow_reload() {
             if *i == Dhands {
-                sum += 600 * dhands_mul
+                sum += 300 * get_item_mul(i, items)
             }
         }
         if player.is_squishy() {
             if *i == Haven {
-                sum += 600 * haven_mul
+                sum += 400 * get_item_mul(i, items)
             }
         }
         if player.is_fast() {
             if *i == Nimble {
-                sum += 500 * nimble_mul
+                sum += 200 * get_item_mul(i, items)
             }
         }
         if *i == Caut {
-            sum += 200 * caut_mul
+            sum += 100 * get_item_mul(i, items)
         } else if *i == Chronos {
-            sum += 200 * chronos_mul
+            sum += 100 * get_item_mul(i, items)
         } else if *i == Haven {
-            sum += 200 * haven_mul
+            sum += 100 * get_item_mul(i, items)
         } else if *i == Bshields {
-            sum += 150 * haven_mul
+            sum += 50 * get_item_mul(i, items)
+        }
+        if player.get_class() == Class::Support {
+            if *i == Caut {
+                sum -= 200 * get_item_mul(i, items)
+            } else if *i == Nimble {
+                sum += 25 * get_item_mul(i, items)
+            }
         }
     }
     sum - cost
